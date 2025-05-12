@@ -20,22 +20,36 @@ fetchButton.addEventListener("click", () => {
 
 document.getElementById("postForm").addEventListener("submit", handleSubmit);
 const postList = document.getElementById("postList");
+const errorDiv = document.getElementById("error");
+const formError = document.getElementById("formError");
+//const formSuccess = document.getElementById("formSuccess"); I'm using alert instead of this div
+errorDiv.style.color = "red";
+formError.style.color = "red";
+
 const delay = ms => new Promise(res => setTimeout(res, ms)); // utility function for a delay
 
 async function fetchPosts() {
-    postList.innerHTML = "<p>Loading...</p>";
-    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
-    if (!response.ok) {
-        postList.innerHTML = "<p>Error: something went wrong.</p>";
+    try {
+        postList.innerHTML = "<p>Loading...</p>";
+        const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+        if (!response.ok) {
+            errorDiv.innerHTML = `<p>Error: something went wrong. Response status: ${response.status}</p>`;
+            postList.innerHTML = "";
+            return;
+        }
+        const data = await response.json();
+        console.log(data);
+        //console.log(huhi);
+        await delay(1000); // delay to see the loading message
+        renderPosts(data);
+    } catch(err) {
+        errorDiv.innerHTML = `<p>${err.name}: ${err.message}.</p>`;
+        postList.innerHTML = "";
     }
-    const data = await response.json();
-    console.log(data);
-    await delay(1000); // delay to see the loading message
-    postList.innerHTML = "";
-    renderPosts(data);
 }
 
 function renderPosts(posts) {
+    postList.innerHTML = "";
     posts.forEach((el) => {
         const newPost = document.createElement("div");
         const title = document.createElement("h3");
@@ -61,7 +75,15 @@ async function submitPost(post) {
 
 function handleSubmit(event) {
     event.preventDefault();
-    const titleInput = document.getElementById("titleInput");
-    const bodyInput = document.getElementById("bodyInput");
-    submitPost({title: titleInput.value, body: bodyInput.value});
+    const titleInput = document.getElementById("titleInput").value.trim();
+    const bodyInput = document.getElementById("bodyInput").value.trim();
+    if (!titleInput || !bodyInput) {
+        formError.innerHTML = "<p>Title and body must not be blank.</p>";
+        return;
+    }
+    try {
+        submitPost({title: titleInput, body: bodyInput});
+    } catch(err) {
+        formError.innerHTML = `<p>${err.name}: ${err.message}.</p>`;
+    }
 }
