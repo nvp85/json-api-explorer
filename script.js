@@ -29,6 +29,7 @@ formError.style.color = "red";
 const delay = ms => new Promise(res => setTimeout(res, ms)); // utility function for a delay
 
 async function fetchPosts() {
+    clearErrors();
     try {
         postList.innerHTML = "<p>Loading...</p>";
         const response = await fetch("https://jsonplaceholder.typicode.com/posts");
@@ -75,6 +76,7 @@ async function submitPost(post) {
 
 function handleSubmit(event) {
     event.preventDefault();
+    clearErrors();
     const titleInput = document.getElementById("titleInput").value.trim();
     const bodyInput = document.getElementById("bodyInput").value.trim();
     if (!titleInput || !bodyInput) {
@@ -86,4 +88,9 @@ function handleSubmit(event) {
     } catch(err) {
         formError.innerHTML = `<p>${err.name}: ${err.message}.</p>`;
     }
+}
+
+function clearErrors() {
+    formError.innerHTML = "";
+    errorDiv.innerHTML = "";
 }
